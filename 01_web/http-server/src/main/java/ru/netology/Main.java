@@ -8,7 +8,7 @@ import java.util.concurrent.Executors;
 public class Main {
 
   static final int PORT = 9999;
-  static final int THREADS_QUANTITY = 4;
+  static final int THREADS_QUANTITY = 64;
 
   public static void main(String[] args) {
     ExecutorService executorService = Executors.newFixedThreadPool(THREADS_QUANTITY);
