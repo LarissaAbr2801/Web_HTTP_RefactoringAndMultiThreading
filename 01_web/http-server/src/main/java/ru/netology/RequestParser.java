@@ -38,7 +38,7 @@ public class RequestParser implements Parser {
         System.out.println(method);
 
         String path;
-        List<NameValuePair> queryString = null;
+        List<NameValuePair> queryString = new ArrayList<>();
 
         //проверяем наличие queryString
         if (requestLine[1].contains("?")) {
@@ -73,21 +73,31 @@ public class RequestParser implements Parser {
         final var headers = Arrays.asList(new String(headersBytes).split("\r\n"));
         System.out.println(headers);
 
+        List<NameValuePair> postParams = new ArrayList<>();
         // для GET тела нет
         if (!method.equals("GET")) {
             in.skip(headersDelimiter.length);
             // вычитываем Content-Length, чтобы прочитать body
             final var contentLength = extractHeader(headers, "Content-Length");
+            final var contentType = extractHeader(headers, "Content-Type");
             if (contentLength.isPresent()) {
                 final var length = Integer.parseInt(contentLength.get());
+                final var type = contentType.get();
                 final var bodyBytes = in.readNBytes(length);
 
                 final var body = new String(bodyBytes);
+
+                System.out.println(type);
+                if(type.equals("application/x-www-form-urlencoded")) {
+                    postParams = URLEncodedUtils.parse(body, StandardCharsets.UTF_8);
+                    System.out.println(postParams);
+                }
+
                 System.out.println(body);
-                return new Request(method, path, null, headers, body);
+                return new Request(method, path, queryString, headers, body, postParams);
             }
         }
-        return new Request(method, path, queryString, headers, null);
+        return new Request(method, path, queryString, headers, null, postParams);
     }
 
     private static Optional<String> extractHeader(List<String> headers, String header) {
